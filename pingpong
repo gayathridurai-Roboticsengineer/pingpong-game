@@ -1,0 +1,126 @@
+import turtle
+
+# Setup the screen
+def new_func():
+    win = turtle.Screen()
+    return win
+
+win = new_func()
+win.title("Ping Pong Game")
+win.bgcolor("yellow")
+win.setup(width=600, height=400)
+
+# Paddle A
+paddle_a = turtle.Turtle()
+paddle_a.speed(0)
+paddle_a.shape("square")
+paddle_a.color("red")
+paddle_a.shapesize(stretch_wid=5, stretch_len=1)
+paddle_a.penup()
+paddle_a.goto(-250, 0)
+
+# Paddle B (Automatic)
+paddle_b = turtle.Turtle()
+paddle_b.speed(0)
+paddle_b.shape("square")
+paddle_b.color("green")
+paddle_b.shapesize(stretch_wid=5, stretch_len=1)
+paddle_b.penup()
+paddle_b.goto(250, 0)
+
+# Ball
+ball = turtle.Turtle()
+ball.speed(40)
+ball.shape("circle")
+ball.color("black")
+ball.penup()
+ball.goto(0, 0)
+ball.dx = 3
+ball.dy = -3
+
+# Score variables
+score_a = 0
+score_b = 0
+
+# Scoreboard
+scoreboard = turtle.Turtle()
+scoreboard.speed(0)
+scoreboard.color("black")
+scoreboard.penup()
+scoreboard.hideturtle()
+scoreboard.goto(0, 170)
+scoreboard.write(f"Player A : {score_a} Player B : {score_b}", align="center", font=("arial", 14, "normal"))
+
+# Paddle movement functions
+def paddle_a_up():
+    y = paddle_a.ycor()
+    if y < 150:  # prevent paddle from going off-screen
+        y += 20
+        paddle_a.sety(y)
+
+def paddle_a_down():
+    y = paddle_a.ycor()
+    if y > -150:  # prevent paddle from going off-screen
+        y -= 20
+        paddle_a.sety(y)
+
+def move_paddle_b():
+    if ball.dy > 0 and ball.ycor() > paddle_b.ycor() and paddle_b.ycor() < 150:
+        paddle_b.sety(paddle_b.ycor() + 20)
+    elif ball.dy < 0 and ball.ycor() < paddle_b.ycor() and paddle_b.ycor() > -150:
+        paddle_b.sety(paddle_b.ycor() - 20)
+
+# Keyboard bindings
+win.listen()
+win.onkeypress(paddle_a_up, "w")
+win.onkeypress(paddle_a_down, "s")
+
+# Main game loop
+while True:
+    win.update()
+
+    # Move the ball
+    ball.setx(ball.xcor() + ball.dx)
+    ball.sety(ball.ycor() + ball.dy)
+
+    # Move Paddle B automatically
+    move_paddle_b()
+
+    # Ball collision with top and bottom walls
+    if ball.ycor() > 190 or ball.ycor() < -190:
+        ball.dy *= -1
+
+    # Ball collision with paddles
+    if (240 < ball.xcor() < 250) and (paddle_b.ycor() - 50 < ball.ycor() < paddle_b.ycor() + 50):
+        ball.setx(240)
+        ball.dx *= -1
+
+    if (-250 < ball.xcor() < -240) and (paddle_a.ycor() - 50 < ball.ycor() < paddle_a.ycor() + 50):
+        ball.setx(-240)
+        ball.dx *= -1
+
+    # Ball out of bounds (left or right)
+    if ball.xcor() > 290:
+        ball.goto(0, 0)
+        ball.dx *= -1
+        score_a += 1
+        scoreboard.clear()
+        scoreboard.write(f"Player A : {score_a} Player B : {score_b}", align="center", font=("arial", 14, "normal"))
+
+    if ball.xcor() < -290:
+        ball.goto(0, 0)
+        ball.dx *= -1
+        score_b += 1
+        scoreboard.clear()
+        scoreboard.write(f"Player A : {score_a} Player B : {score_b}", align="center", font=("arial", 14, "normal"))
+
+    # Winning condition
+    if score_a == 5 or score_b == 5:
+        scoreboard.clear()
+        if score_a == 5:
+            scoreboard.write("PLAYER A WINS!", align="center", font=("arial", 14, "bold"))
+        if score_b == 5:
+            scoreboard.write("PLAYER B WINS!", align="center", font=("arial", 14, "bold"))
+        break
+
+win.mainloop()
